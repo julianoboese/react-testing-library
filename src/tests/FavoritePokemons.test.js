@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import App from '../App';
 import renderWithRouter from '../renderWithRouter';
 import { FavoritePokemons } from '../components';
+import pokemons from '../data';
 
 test('Deve ser exibido "No favorite pokemon found" se não houver pokemons favoritos',
   () => {
@@ -13,10 +14,9 @@ test('Deve ser exibido "No favorite pokemon found" se não houver pokemons favor
 
 test('Devem ser exibidos os pokémons favoritos', () => {
   const { history } = renderWithRouter(<App />);
-  const AMOUNT_OF_POKEMONS = 9;
   const favoritePokemons = [];
 
-  for (let i = 0; i < AMOUNT_OF_POKEMONS; i += 2) {
+  for (let i = 0; i < pokemons.length; i += 2) {
     for (let j = 0; j < i; j += 1) {
       userEvent.click(screen.getByRole('button', { name: 'Próximo pokémon' }));
     }
