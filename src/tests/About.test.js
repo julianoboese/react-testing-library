@@ -5,10 +5,8 @@ import { About } from '../components';
 
 test('A página deve conter os dados sobre a Pokédex', () => {
   renderWithRouter(<About />);
-  const firstParagraphText = 'This application simulates a Pokédex, '
-  + 'a digital encyclopedia containing all Pokémons';
-  const secondParagraphText = 'One can filter Pokémons by type, '
-  + 'and see more details for each one of them';
+  const firstParagraphText = /This application simulates a Pokédex/i;
+  const secondParagraphText = /One can filter Pokémons by type/i;
   const pokedexImage = screen.getByAltText('Pokédex');
 
   expect(screen.getByRole('heading', { level: 2, name: 'About Pokédex' }));
