@@ -23,12 +23,14 @@ test('Os próximos pokemons da lista devem ser mostrados ao clicar em "Próximo 
       isPokemonFavoriteById={ App.setIsPokemonFavoriteById() }
     />);
 
-    for (let i = 0; i < pokemons.length; i += 1) {
-      expect(screen.getByTestId('pokemon-name').innerHTML).toBe(pokemons[i].name);
-      expect(screen.getAllByTestId('pokemon-name')).toHaveLength(1);
+    const pokemonNameTest = 'pokemon-name';
+
+    pokemons.forEach((pokemon) => {
+      expect(screen.getByTestId(pokemonNameTest).innerHTML).toBe(pokemon.name);
+      expect(screen.getAllByTestId(pokemonNameTest)).toHaveLength(1);
       userEvent.click(screen.getByRole('button', { name: 'Próximo pokémon' }));
-    }
-    expect(screen.getByTestId('pokemon-name').innerHTML).toBe(pokemons[0].name);
+    });
+    expect(screen.getByTestId(pokemonNameTest).innerHTML).toBe(pokemons[0].name);
   });
 
 test('Os botões de filtro de tipo devem funcionar corretamente"', () => {
@@ -37,31 +39,36 @@ test('Os botões de filtro de tipo devem funcionar corretamente"', () => {
     isPokemonFavoriteById={ App.setIsPokemonFavoriteById() }
   />);
 
-  const pokemonTypes = [...new Set(pokemons.reduce(
-    (types, { type }) => [...types, type], [],
-  ))];
+  const nextPokemonButton = screen.getByRole('button', { name: 'Próximo pokémon' });
+  const pokemonNameTest = 'pokemon-name';
 
   expect(screen.getByRole('button', { name: 'All' })).toBeInTheDocument();
   userEvent.click(screen.getByRole('button', { name: 'All' }));
-  for (let i = 0; i < pokemons.length; i += 1) {
-    expect(screen.getByTestId('pokemon-name').innerHTML).toBe(pokemons[i].name);
-    expect(screen.getAllByTestId('pokemon-name')).toHaveLength(1);
-    userEvent.click(screen.getByRole('button', { name: 'Próximo pokémon' }));
-  }
 
-  pokemonTypes.forEach((type) => {
-    expect(screen.getByRole('button', { name: type })).toBeInTheDocument();
+  pokemons.forEach((pokemon) => {
+    expect(screen.getByTestId(pokemonNameTest).innerHTML).toBe(pokemon.name);
+    userEvent.click(nextPokemonButton);
   });
-  pokemonTypes.forEach((type) => {
-    const filteredPokemons = pokemons.filter((pokemon) => pokemon.type === type);
-    userEvent.click(screen.getByRole('button', { name: type }));
-    for (let i = 0; i < filteredPokemons.length; i += 1) {
-      expect(screen.getByTestId('pokemon-name').innerHTML).toBe(filteredPokemons[i].name);
-      expect(screen.getByTestId('pokemon-type').innerHTML).toBe(type);
-      expect(screen.getAllByTestId('pokemon-name')).toHaveLength(1);
-      userEvent.click(screen.getByRole('button', { name: 'Próximo pokémon' }));
-    }
-    expect(screen.getByTestId('pokemon-name').innerHTML).toBe(filteredPokemons[0].name);
-    expect(screen.getByTestId('pokemon-type').innerHTML).toBe(type);
+  expect(screen.getByTestId(pokemonNameTest).innerHTML).toBe(pokemons[0].name);
+
+  const pokemonTypes = [...new Set(pokemons.reduce(
+    (types, { type }) => [...types, type], [],
+  ))];
+  const pokemonTypeButtons = screen.getAllByTestId('pokemon-type-button');
+
+  expect(pokemonTypeButtons).toHaveLength(pokemonTypes.length);
+
+  pokemonTypeButtons.forEach((typeButton) => {
+    const filteredPokemons = pokemons.filter(
+      (pokemon) => pokemon.type === typeButton.innerHTML,
+    );
+    userEvent.click(typeButton);
+    filteredPokemons.forEach((pokemon) => {
+      expect(screen.getByTestId(pokemonNameTest).innerHTML).toBe(pokemon.name);
+      expect(screen.getByTestId('pokemon-type').innerHTML).toBe(typeButton.innerHTML);
+      userEvent.click(nextPokemonButton);
+    });
+    expect(screen.getByTestId(pokemonNameTest).innerHTML).toBe(filteredPokemons[0].name);
+    expect(screen.getByTestId('pokemon-type').innerHTML).toBe(typeButton.innerHTML);
   });
 });
