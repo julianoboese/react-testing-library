@@ -5,32 +5,73 @@ import renderWithRouter from '../renderWithRouter';
 import App from '../App';
 import pokemons from '../data';
 
-test('O card do Pokémon deve exibir os dados corretos', () => {
-  renderWithRouter(<App />);
+describe('01 - Testa o componente <PokemonDetails.js />', () => {
+  const detailsLinkInnerText = { name: 'More details' };
 
-  userEvent.click(screen.getByRole('link', { name: 'More details' }));
+  test('Testa se as informações detalhadas do Pokémon selecionado são mostradas na tela.',
+    () => {
+      renderWithRouter(<App />);
+      let detailsLink = screen.getByRole('link', detailsLinkInnerText);
+      userEvent.click(detailsLink);
 
-  const { name, summary, foundAt } = pokemons[0];
+      const { name, summary } = pokemons[0];
 
-  expect(screen.getByRole('heading', { name: `${name} Details` })).toBeInTheDocument();
-  expect(screen.queryByRole('link', { name: 'More details' })).not.toBeInTheDocument();
-  expect(screen.getByRole('heading', { name: 'Summary' })).toBeInTheDocument();
-  expect(screen.getByText(summary)).toBeInTheDocument();
-  expect(screen.getByRole('heading', { name: `Game Locations of ${name}` }))
-    .toBeInTheDocument();
+      const detailsHeading = screen.getByRole('heading', { name: `${name} Details` });
+      expect(detailsHeading).toBeInTheDocument();
 
-  const pokemonLocations = screen.getAllByAltText(`${name} location`);
-  expect(pokemonLocations).toHaveLength(foundAt.length);
-  foundAt.forEach(({ location, map }, index) => {
-    expect(pokemonLocations[index]).toHaveAttribute('src', map);
-    expect(screen.getByText(location)).toBeInTheDocument();
-  });
+      detailsLink = screen.queryByRole('link', detailsLinkInnerText);
+      expect(detailsLink).not.toBeInTheDocument();
 
-  const favoriteCheck = screen.getByLabelText('Pokémon favoritado?');
-  expect(favoriteCheck).toBeInTheDocument();
-  expect(screen.queryByAltText(`${name} is marked as favorite`)).not.toBeInTheDocument();
-  userEvent.click(favoriteCheck);
-  expect(screen.getByAltText(`${name} is marked as favorite`)).toBeInTheDocument();
-  userEvent.click(favoriteCheck);
-  expect(screen.queryByAltText(`${name} is marked as favorite`)).not.toBeInTheDocument();
+      const summaryHeading = screen.getByRole('heading', { name: 'Summary' });
+      expect(summaryHeading).toBeInTheDocument();
+
+      const summaryParagraph = screen.getByText(summary);
+      expect(summaryParagraph).toBeInTheDocument();
+    });
+
+  test('Testa se existe uma seção com os mapas contendo as localizações do pokémon.',
+    () => {
+      renderWithRouter(<App />);
+      const detailsLink = screen.getByRole('link', detailsLinkInnerText);
+      userEvent.click(detailsLink);
+
+      const { name, foundAt } = pokemons[0];
+
+      const locationsHeading = screen
+        .getByRole('heading', { name: `Game Locations of ${name}` });
+      expect(locationsHeading).toBeInTheDocument();
+
+      const pokemonLocations = screen.getAllByAltText(`${name} location`);
+      expect(pokemonLocations).toHaveLength(foundAt.length);
+
+      foundAt.forEach(({ location, map }, index) => {
+        expect(pokemonLocations[index]).toHaveAttribute('src', map);
+
+        const locationName = screen.getByText(location);
+        expect(locationName).toBeInTheDocument();
+      });
+    });
+
+  test('Testa se existe uma seção com os mapas contendo as localizações do pokémon.',
+    () => {
+      renderWithRouter(<App />);
+      const detailsLink = screen.getByRole('link', detailsLinkInnerText);
+      userEvent.click(detailsLink);
+
+      const { name } = pokemons[0];
+
+      const favoriteCheck = screen.getByLabelText('Pokémon favoritado?');
+      expect(favoriteCheck).toBeInTheDocument();
+
+      let favoriteIcon = screen.queryByAltText(`${name} is marked as favorite`);
+      expect(favoriteIcon).not.toBeInTheDocument();
+      userEvent.click(favoriteCheck);
+
+      favoriteIcon = screen.getByAltText(`${name} is marked as favorite`);
+      expect(favoriteIcon).toBeInTheDocument();
+      userEvent.click(favoriteCheck);
+
+      favoriteIcon = screen.queryByAltText(`${name} is marked as favorite`);
+      expect(favoriteIcon).not.toBeInTheDocument();
+    });
 });
