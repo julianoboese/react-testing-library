@@ -4,48 +4,65 @@ import userEvent from '@testing-library/user-event';
 import App from '../App';
 import renderWithRouter from '../renderWithRouter';
 
-test('Os links de navegação são exibidos corretamente', () => {
-  const navLinks = ['Home', 'About', 'Favorite Pokémons'];
-  renderWithRouter(<App />);
-  navLinks.forEach((navLink) => {
-    expect(screen.getByRole('link', { name: navLink })).toBeInTheDocument();
+describe('01 - Testa o componente <App.js />', () => {
+  test('Testa se os links de navegação são exibidos corretamente', () => {
+    renderWithRouter(<App />);
+
+    const pages = ['Home', 'About', 'Favorite Pokémons'];
+    pages.forEach((page) => {
+      const navLink = screen.getByRole('link', { name: page });
+      expect(navLink).toBeInTheDocument();
+    });
   });
-});
 
-test('A aplicação é direcionada para a URL "/" ao clicar em "Home"', () => {
-  const { history } = renderWithRouter(<App />);
-  userEvent.click(screen.getByRole('link', { name: 'Home' }));
-
-  expect(history.location.pathname).toBe('/');
-  expect(screen.getByRole('heading', { level: 2, name: 'Encountered pokémons' }))
-    .toBeInTheDocument();
-});
-
-test('A aplicação é direcionada para a URL "/about" ao clicar em "About"', () => {
-  const { history } = renderWithRouter(<App />);
-  userEvent.click(screen.getByRole('link', { name: 'About' }));
-
-  expect(history.location.pathname).toBe('/about');
-  expect(screen.getByRole('heading', { level: 2, name: 'About Pokédex' }))
-    .toBeInTheDocument();
-});
-
-test('A aplicação é direcionada para a URL "/favorites" ao clicar em "Favorite Pokémons"',
-  () => {
+  test('Testa se a aplicação é direcionada para a URL "/" ao clicar em "Home"', () => {
     const { history } = renderWithRouter(<App />);
-    userEvent.click(screen.getByRole('link', { name: 'Favorite Pokémons' }));
+    userEvent.click(screen.getByRole('link', { name: 'Home' }));
 
-    expect(history.location.pathname).toBe('/favorites');
-    expect(screen.getByRole('heading', { level: 2, name: 'Favorite pokémons' }))
-      .toBeInTheDocument();
+    const pageUrl = history.location.pathname;
+    expect(pageUrl).toBe('/');
+
+    const pageHeading = screen
+      .getByRole('heading', { level: 2, name: 'Encountered pokémons' });
+    expect(pageHeading).toBeInTheDocument();
   });
 
-test('A aplicação é direcionada para a página "Not Found" ao inserir uma URL inexistente',
-  () => {
-    const { history } = renderWithRouter(<App />);
-    history.push('/url-inexistente');
+  test('Testa se a aplicação é direcionada para a URL "/about" ao clicar em "About"',
+    () => {
+      const { history } = renderWithRouter(<App />);
+      userEvent.click(screen.getByRole('link', { name: 'About' }));
 
-    expect(history.location.pathname).toBe('/url-inexistente');
-    expect(screen.getByAltText('Pikachu crying because the page requested was not found'))
-      .toBeInTheDocument();
-  });
+      const pageUrl = history.location.pathname;
+      expect(pageUrl).toBe('/about');
+
+      const pageHeading = screen
+        .getByRole('heading', { level: 2, name: 'About Pokédex' });
+      expect(pageHeading).toBeInTheDocument();
+    });
+
+  test('Testa se direciona para a URL "/favorites" ao clicar em "Favorite Pokémons"',
+    () => {
+      const { history } = renderWithRouter(<App />);
+      userEvent.click(screen.getByRole('link', { name: 'Favorite Pokémons' }));
+
+      const pageUrl = history.location.pathname;
+      expect(pageUrl).toBe('/favorites');
+
+      const pageHeading = screen
+        .getByRole('heading', { level: 2, name: 'Favorite pokémons' });
+      expect(pageHeading).toBeInTheDocument();
+    });
+
+  test('Testa se direciona para a página "Not Found" ao inserir uma URL inexistente',
+    () => {
+      const { history } = renderWithRouter(<App />);
+      history.push('/url-inexistente');
+
+      const pageUrl = history.location.pathname;
+      expect(pageUrl).toBe('/url-inexistente');
+
+      const notFoundImage = screen
+        .getByAltText('Pikachu crying because the page requested was not found');
+      expect(notFoundImage).toBeInTheDocument();
+    });
+});
