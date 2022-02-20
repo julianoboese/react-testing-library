@@ -5,7 +5,7 @@ import renderWithRouter from '../renderWithRouter';
 import App from '../App';
 import pokemons from '../data';
 
-describe('01 - Testa o componente <PokemonDetails.js />', () => {
+describe('07 - Testa o componente <PokemonDetails.js />', () => {
   const detailsLinkInnerText = { name: 'More details' };
 
   test('Testa se as informações detalhadas do Pokémon selecionado são mostradas na tela.',
