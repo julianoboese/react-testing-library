@@ -6,69 +6,100 @@ import App from '../App';
 import { Pokedex } from '../components';
 import pokemons from '../data';
 
-test('A página deve ter o heading "Encountered pokémons"', () => {
-  renderWithRouter(<Pokedex
-    pokemons={ pokemons }
-    isPokemonFavoriteById={ App.setIsPokemonFavoriteById() }
-  />);
+describe('05 - Testa o componente <Pokedex.js />', () => {
+  const pokemonNameTestId = 'pokemon-name';
+  const nextPokemonButtonInnerText = { name: 'Próximo pokémon' };
 
-  expect(screen.getByRole('heading', { level: 2, name: 'Encountered pokémons' }))
-    .toBeInTheDocument();
-});
-
-test('Os próximos pokemons da lista devem ser mostrados ao clicar em "Próximo pokémon"',
-  () => {
+  test('Testa se a página tem o heading "Encountered pokémons"', () => {
     renderWithRouter(<Pokedex
       pokemons={ pokemons }
       isPokemonFavoriteById={ App.setIsPokemonFavoriteById() }
     />);
 
-    const pokemonNameTest = 'pokemon-name';
-
-    pokemons.forEach((pokemon) => {
-      expect(screen.getByTestId(pokemonNameTest).innerHTML).toBe(pokemon.name);
-      expect(screen.getAllByTestId(pokemonNameTest)).toHaveLength(1);
-      userEvent.click(screen.getByRole('button', { name: 'Próximo pokémon' }));
-    });
-    expect(screen.getByTestId(pokemonNameTest).innerHTML).toBe(pokemons[0].name);
+    const pokedexHeading = screen
+      .getByRole('heading', { level: 2, name: 'Encountered pokémons' });
+    expect(pokedexHeading).toBeInTheDocument();
   });
 
-test('Os botões de filtro de tipo devem funcionar corretamente"', () => {
-  renderWithRouter(<Pokedex
-    pokemons={ pokemons }
-    isPokemonFavoriteById={ App.setIsPokemonFavoriteById() }
-  />);
+  test('Testa se os próximos Pokémons são exibidos ao clicar em "Próximo pokémon"',
+    () => {
+      renderWithRouter(<Pokedex
+        pokemons={ pokemons }
+        isPokemonFavoriteById={ App.setIsPokemonFavoriteById() }
+      />);
 
-  const nextPokemonButton = screen.getByRole('button', { name: 'Próximo pokémon' });
-  const pokemonNameTest = 'pokemon-name';
+      pokemons.forEach(({ name }) => {
+        expect(screen.getAllByTestId(pokemonNameTestId)).toHaveLength(1);
 
-  expect(screen.getByRole('button', { name: 'All' })).toBeInTheDocument();
-  userEvent.click(screen.getByRole('button', { name: 'All' }));
+        const pokemonNameElement = screen.getByTestId(pokemonNameTestId);
+        expect(pokemonNameElement).toHaveTextContent(name);
 
-  pokemons.forEach((pokemon) => {
-    expect(screen.getByTestId(pokemonNameTest).innerHTML).toBe(pokemon.name);
-    userEvent.click(nextPokemonButton);
-  });
-  expect(screen.getByTestId(pokemonNameTest).innerHTML).toBe(pokemons[0].name);
+        const nextPokemon = screen.getByRole('button', nextPokemonButtonInnerText);
+        userEvent.click(nextPokemon);
+      });
 
-  const pokemonTypes = [...new Set(pokemons.reduce(
-    (types, { type }) => [...types, type], [],
-  ))];
-  const pokemonTypeButtons = screen.getAllByTestId('pokemon-type-button');
-
-  expect(pokemonTypeButtons).toHaveLength(pokemonTypes.length);
-
-  pokemonTypeButtons.forEach((typeButton) => {
-    const filteredPokemons = pokemons.filter(
-      (pokemon) => pokemon.type === typeButton.innerHTML,
-    );
-    userEvent.click(typeButton);
-    filteredPokemons.forEach((pokemon) => {
-      expect(screen.getByTestId(pokemonNameTest).innerHTML).toBe(pokemon.name);
-      expect(screen.getByTestId('pokemon-type').innerHTML).toBe(typeButton.innerHTML);
-      userEvent.click(nextPokemonButton);
+      const pokemonNameElement = screen.getByTestId(pokemonNameTestId);
+      expect(pokemonNameElement).toHaveTextContent(pokemons[0].name);
     });
-    expect(screen.getByTestId(pokemonNameTest).innerHTML).toBe(filteredPokemons[0].name);
-    expect(screen.getByTestId('pokemon-type').innerHTML).toBe(typeButton.innerHTML);
+
+  test('Testa se os botões de filtro de tipo funcionam corretamente', () => {
+    renderWithRouter(<Pokedex
+      pokemons={ pokemons }
+      isPokemonFavoriteById={ App.setIsPokemonFavoriteById() }
+    />);
+
+    const pokemonTypes = [...new Set(pokemons.reduce(
+      (types, { type }) => [...types, type], [],
+    ))];
+    const pokemonTypeButtons = screen.getAllByTestId('pokemon-type-button');
+    expect(pokemonTypeButtons).toHaveLength(pokemonTypes.length);
+
+    pokemonTypeButtons.forEach((typeButton) => {
+      const filteredPokemons = pokemons.filter(
+        ({ type }) => type === typeButton.innerHTML,
+      );
+
+      userEvent.click(typeButton);
+
+      filteredPokemons.forEach(({ name }) => {
+        const pokemonNameElement = screen.getByTestId(pokemonNameTestId);
+        expect(pokemonNameElement).toHaveTextContent(name);
+
+        const pokemonTypeElement = screen.getByTestId('pokemon-type');
+        expect(pokemonTypeElement).toHaveTextContent(typeButton.innerHTML);
+
+        const nextPokemon = screen.getByRole('button', nextPokemonButtonInnerText);
+        userEvent.click(nextPokemon);
+      });
+
+      const pokemonNameElement = screen.getByTestId(pokemonNameTestId);
+      expect(pokemonNameElement).toHaveTextContent(filteredPokemons[0].name);
+
+      const pokemonTypeElement = screen.getByTestId('pokemon-type');
+      expect(pokemonTypeElement).toHaveTextContent(typeButton.innerHTML);
+    });
+  });
+
+  test('Testa se o botão "All" reseta o filtro', () => {
+    renderWithRouter(<Pokedex
+      pokemons={ pokemons }
+      isPokemonFavoriteById={ App.setIsPokemonFavoriteById() }
+    />);
+
+    const allTypes = screen.getByRole('button', { name: 'All' });
+    expect(allTypes).toBeInTheDocument();
+
+    userEvent.click(allTypes);
+
+    pokemons.forEach(({ name }) => {
+      const pokemonNameElement = screen.getByTestId(pokemonNameTestId);
+      expect(pokemonNameElement).toHaveTextContent(name);
+
+      const nextPokemon = screen.getByRole('button', nextPokemonButtonInnerText);
+      userEvent.click(nextPokemon);
+    });
+
+    const pokemonNameElement = screen.getByTestId(pokemonNameTestId);
+    expect(pokemonNameElement).toHaveTextContent(pokemons[0].name);
   });
 });
